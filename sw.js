@@ -1,5 +1,5 @@
 // Service Worker for Divine Quotes PWA
-const CACHE_NAME = 'divine-quotes-v1';
+const CACHE_NAME = 'divine-quotes-v2';
 
 const ASSETS_TO_CACHE = [
   './',
