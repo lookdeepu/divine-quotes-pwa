@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Divine Quotes - Sacred Wisdom</title>
+  <meta name="description" content="Daily inspiring and motivational quotes from the Bible, Bhagavad Gita, and Quran.">
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <meta name="theme-color" content="#6750A4">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Divine Quotes">
+  
+  <!-- Manifest & Icons -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Bar -->
+    <header>
+      <div class="brand">
+        <h1>Sacred Wisdom</h1>
+      </div>
+      <button id="bellBtn" class="icon-btn" title="Daily Notification Settings" aria-label="Daily Notification Settings">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Scripture Filter Chips -->
+    <nav class="filter-row" aria-label="Scripture Filters">
+      <button class="chip selected" data-filter="">All</button>
+      <button class="chip" data-filter="BIBLE">✝️ Bible</button>
+      <button class="chip" data-filter="GITA">🕉️ Gita</button>
+      <button class="chip" data-filter="QURAN">☪️ Quran</button>
+    </nav>
+
+    <!-- Main Quote Card -->
+    <main>
+      <section id="quoteCard" class="quote-card" aria-live="polite">
+        <div id="quoteEmoji" class="quote-emoji">✨</div>
+        <div id="quoteSource" class="quote-source">Sacred Wisdom</div>
+        <blockquote id="quoteText" class="quote-text">
+          Loading inspiration...
+        </blockquote>
+        <cite id="quoteCitation" class="quote-citation"></cite>
+      </section>
+
+      <!-- Action Buttons -->
+      <div class="actions-row">
+        <button id="newQuoteBtn" class="btn btn-primary">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          <span>New Quote</span>
+        </button>
+
+        <button id="shareBtn" class="btn btn-tonal">
+          <svg viewBox="0 0 24 24">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+          </svg>
+          <span>Share</span>
+        </button>
+      </div>
+
+      <button id="copyBtn" class="btn-text">
+        <svg viewBox="0 0 24 24">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+        <span>Copy to Clipboard</span>
+      </button>
+
+      <!-- Notification Hint Banner -->
+      <div id="hintBanner" class="hint-banner">
+        <span>💡 Tap the bell icon to receive daily wisdom notifications</span>
+        <button id="enableNotifHintBtn">Turn On</button>
+      </div>
+
+      <!-- Install App Banner (A2HS) -->
+      <div id="installBanner" class="install-banner">
+        <span class="install-banner-text">📲 Install Divine Quotes app on your phone</span>
+        <button id="installBtn" class="install-banner-btn">Install</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Settings Modal Dialog -->
+  <div id="settingsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">🔔 Daily Notifications</h2>
+        <button id="closeModalBtn" class="icon-btn" aria-label="Close settings">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="modal-desc">
+        Receive an uplifting quote from the sacred scriptures at your chosen time each day.
+      </p>
+
+      <div class="setting-toggle-row">
+        <label for="notifToggle">Enable Daily Quotes</label>
+        <label class="switch">
+          <input type="checkbox" id="notifToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- Time Picker Section -->
+      <div id="timeSection" class="time-settings-section">
+        <div class="time-input-row">
+          <input type="number" id="hourInput" class="time-input" min="0" max="23" placeholder="08" aria-label="Hour (0-23)">
+          <span class="time-divider">:</span>
+          <input type="number" id="minuteInput" class="time-input" min="0" max="59" placeholder="00" aria-label="Minute (0-59)">
+        </div>
+        <p id="timeDisplay" class="time-hint">Next notification: 8:00 AM daily</p>
+      </div>
+
+      <button id="doneModalBtn" class="btn-done">Done</button>
+    </div>
+  </div>
+
+  <!-- Toast Element -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/quotes.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
