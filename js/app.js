@@ -16,6 +16,7 @@ const shareBtn = document.getElementById('shareBtn');
 const copyBtn = document.getElementById('copyBtn');
 const filterChips = document.querySelectorAll('.chip');
 
+const themeToggleBtn = document.getElementById('themeToggleBtn');
 const bellBtn = document.getElementById('bellBtn');
 const settingsModal = document.getElementById('settingsModal');
 const closeModalBtn = document.getElementById('closeModalBtn');
@@ -30,6 +31,29 @@ const enableNotifHintBtn = document.getElementById('enableNotifHintBtn');
 const installBanner = document.getElementById('installBanner');
 const installBtn = document.getElementById('installBtn');
 const toast = document.getElementById('toast');
+
+// Theme preference
+const THEME_STORAGE_KEY = 'divineQuotesTheme';
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const isDark = theme === 'dark';
+  themeToggleBtn.setAttribute('aria-pressed', String(isDark));
+  themeToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  themeToggleBtn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+}
+
+function getInitialTheme() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  applyTheme(nextTheme);
+}
 
 // Format time string
 function formatDisplayTime(hour, minute) {
@@ -225,6 +249,7 @@ filterChips.forEach(chip => {
   });
 });
 
+themeToggleBtn.addEventListener('click', toggleTheme);
 bellBtn.addEventListener('click', openSettingsModal);
 closeModalBtn.addEventListener('click', closeSettingsModal);
 doneModalBtn.addEventListener('click', closeSettingsModal);
@@ -271,6 +296,7 @@ if ('serviceWorker' in navigator) {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(getInitialTheme());
   updateNotificationUIState();
   NotificationManager.startDailyChecker();
   displayQuote(getRandomQuote());
