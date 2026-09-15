@@ -21,6 +21,8 @@ const settingsModal = document.getElementById('settingsModal');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const doneModalBtn = document.getElementById('doneModalBtn');
 const notifToggle = document.getElementById('notifToggle');
+const religionSection = document.getElementById('religionSection');
+const religionSelect = document.getElementById('religionSelect');
 const timeSection = document.getElementById('timeSection');
 const hourInput = document.getElementById('hourInput');
 const minuteInput = document.getElementById('minuteInput');
@@ -138,13 +140,16 @@ function openSettingsModal() {
   const { hour, minute } = NotificationManager.getTime();
 
   notifToggle.checked = isEnabled;
+  religionSelect.value = NotificationManager.getReligion();
   hourInput.value = hour.toString().padStart(2, '0');
   minuteInput.value = minute.toString().padStart(2, '0');
   timeDisplay.textContent = `Daily notification scheduled at ${formatDisplayTime(hour, minute)}`;
 
   if (isEnabled) {
+    religionSection.classList.add('visible');
     timeSection.classList.add('visible');
   } else {
+    religionSection.classList.remove('visible');
     timeSection.classList.remove('visible');
   }
 
@@ -172,26 +177,37 @@ async function handleNotificationToggle(e) {
     const permission = await NotificationManager.requestPermission();
     if (permission === 'granted') {
       NotificationManager.setEnabled(true);
+      religionSection.classList.add('visible');
       timeSection.classList.add('visible');
       updateNotificationUIState();
       showToast('Daily notifications enabled!');
     } else if (permission === 'denied') {
       notifToggle.checked = false;
       NotificationManager.setEnabled(false);
+      religionSection.classList.remove('visible');
       timeSection.classList.remove('visible');
       showToast('Permission denied. Please allow notifications in browser settings.');
     } else {
       notifToggle.checked = false;
       NotificationManager.setEnabled(false);
+      religionSection.classList.remove('visible');
       timeSection.classList.remove('visible');
       showToast('Notifications are not supported in this browser.');
     }
   } else {
     NotificationManager.setEnabled(false);
+    religionSection.classList.remove('visible');
     timeSection.classList.remove('visible');
     updateNotificationUIState();
     showToast('Daily notifications disabled');
   }
+}
+
+function handleReligionChange() {
+  NotificationManager.setReligion(religionSelect.value);
+  showToast(religionSelect.value
+    ? `Daily notifications set to ${religionSelect.options[religionSelect.selectedIndex].text.replace(/^\S+\s/, '')}`
+    : 'Daily notifications set to all religions');
 }
 
 function handleTimeChange() {
@@ -235,6 +251,7 @@ settingsModal.addEventListener('click', (e) => {
 enableNotifHintBtn.addEventListener('click', openSettingsModal);
 
 notifToggle.addEventListener('change', handleNotificationToggle);
+religionSelect.addEventListener('change', handleReligionChange);
 hourInput.addEventListener('change', handleTimeChange);
 minuteInput.addEventListener('change', handleTimeChange);
 
