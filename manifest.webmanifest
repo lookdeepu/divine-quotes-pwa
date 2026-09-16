@@ -4,6 +4,7 @@
   "description": "Daily motivational quotes from the Bible, Bhagavad Gita, and Quran",
   "start_url": "./",
   "scope": "./",
+  "id": "./",
   "display": "standalone",
   "background_color": "#FEF7FF",
   "theme_color": "#6750A4",
