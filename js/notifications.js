@@ -1,4 +1,9 @@
 // Web Notifications Management & Daily Scheduler
+//
+// Important: this is a local/foreground scheduler. It can display a notification
+// while the app is running, but it cannot guarantee delivery while the PWA is
+// suspended or closed. Reliable background delivery requires Web Push + a
+// server-side scheduler and is intentionally kept separate from this module.
 
 const NotificationManager = {
   STORAGE_KEYS: {
@@ -27,10 +32,27 @@ const NotificationManager = {
     localStorage.setItem(this.STORAGE_KEYS.MINUTE, minute);
   },
 
+  isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+  },
+
+  isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  },
+
   async requestPermission() {
     if (!('Notification' in window)) {
       return 'unsupported';
     }
+
+    // iOS/iPadOS Web Push is supported for Home Screen web apps. Keep the
+    // permission request tied to the user's toggle interaction.
+    if (this.isIOS() && !this.isStandalone()) {
+      return 'ios-install-required';
+    }
+
     return await Notification.requestPermission();
   },
 
@@ -53,7 +75,7 @@ const NotificationManager = {
       }
     };
 
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, options);
@@ -74,30 +96,29 @@ const NotificationManager = {
 
   checkAndTriggerDailyNotification() {
     if (!this.isEnabled()) return;
-    if (Notification.permission !== 'granted') return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
     const now = new Date();
     const { hour, minute } = this.getTime();
     const todayStr = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
     const lastSent = localStorage.getItem(this.STORAGE_KEYS.LAST_SENT);
 
-    // If already sent today, skip
     if (lastSent === todayStr) return;
 
-    // Check if current time has passed the target time
     const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
     const scheduledTotalMinutes = hour * 60 + minute;
 
     if (currentTotalMinutes >= scheduledTotalMinutes) {
-      this.sendQuoteNotification();
-      localStorage.setItem(this.STORAGE_KEYS.LAST_SENT, todayStr);
+      this.sendQuoteNotification().then((sent) => {
+        if (sent) {
+          localStorage.setItem(this.STORAGE_KEYS.LAST_SENT, todayStr);
+        }
+      });
     }
   },
 
   startDailyChecker() {
-    // Check immediately on load
     this.checkAndTriggerDailyNotification();
-    // Check every 30 seconds while the page/tab is open
     setInterval(() => {
       this.checkAndTriggerDailyNotification();
     }, 30000);
