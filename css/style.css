@@ -400,6 +400,42 @@ header {
   font-size: 1rem;
 }
 
+/* Notification Religion Picker */
+.religion-settings-section {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--outline-variant);
+  padding-top: 16px;
+}
+
+.religion-settings-section.visible {
+  display: flex;
+}
+
+.setting-label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.religion-select {
+  width: 100%;
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-container);
+  color: var(--on-surface);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.setting-hint {
+  font-size: 0.82rem;
+  color: var(--on-surface-variant);
+  line-height: 1.4;
+}
+
 /* Switch Switch */
 .switch {
   position: relative;

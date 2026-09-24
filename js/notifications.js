@@ -5,6 +5,7 @@ const NotificationManager = {
     ENABLED: 'divine_quotes_notifications_enabled',
     HOUR: 'divine_quotes_notification_hour',
     MINUTE: 'divine_quotes_notification_minute',
+    RELIGION: 'divine_quotes_notification_religion',
     LAST_SENT: 'divine_quotes_last_notification_date'
   },
 
@@ -27,6 +28,14 @@ const NotificationManager = {
     localStorage.setItem(this.STORAGE_KEYS.MINUTE, minute);
   },
 
+  getReligion() {
+    return localStorage.getItem(this.STORAGE_KEYS.RELIGION) || '';
+  },
+
+  setReligion(religion) {
+    localStorage.setItem(this.STORAGE_KEYS.RELIGION, religion || '');
+  },
+
   async requestPermission() {
     if (!('Notification' in window)) {
       return 'unsupported';
@@ -39,7 +48,9 @@ const NotificationManager = {
       return false;
     }
 
-    const q = quote || getRandomQuote();
+    const q = quote || getRandomQuote(this.getReligion() || null);
+    if (!q) return false;
+
     const title = `${q.source.emoji} ${q.source.name}`;
     const options = {
       body: `"${q.text}"\n— ${q.citation}`,
