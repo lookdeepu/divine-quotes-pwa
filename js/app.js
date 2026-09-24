@@ -31,7 +31,6 @@ const installBanner = document.getElementById('installBanner');
 const installBtn = document.getElementById('installBtn');
 const toast = document.getElementById('toast');
 
-// Format time string
 function formatDisplayTime(hour, minute) {
   const ampm = hour < 12 ? 'AM' : 'PM';
   let h = hour % 12;
@@ -40,7 +39,6 @@ function formatDisplayTime(hour, minute) {
   return `${h}:${m} ${ampm}`;
 }
 
-// Display quote with transition
 function displayQuote(quote) {
   currentQuote = quote;
   quoteCard.classList.add('fade-out');
@@ -54,7 +52,6 @@ function displayQuote(quote) {
   }, 180);
 }
 
-// Show toast message
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
@@ -63,7 +60,6 @@ function showToast(message) {
   }, 2500);
 }
 
-// Update UI based on filter
 function setFilter(filterKey) {
   currentFilter = filterKey;
   filterChips.forEach(chip => {
@@ -75,11 +71,9 @@ function setFilter(filterKey) {
     }
   });
 
-  const nextQuote = getRandomQuote(currentFilter);
-  displayQuote(nextQuote);
+  displayQuote(getRandomQuote(currentFilter));
 }
 
-// Share Quote
 async function shareQuote() {
   if (!currentQuote) return;
 
@@ -93,16 +87,13 @@ async function shareQuote() {
     try {
       await navigator.share(shareData);
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        copyQuoteToClipboard();
-      }
+      if (err.name !== 'AbortError') copyQuoteToClipboard();
     }
   } else {
     copyQuoteToClipboard();
   }
 }
 
-// Copy Quote
 function copyQuoteToClipboard() {
   if (!currentQuote) return;
 
@@ -110,9 +101,7 @@ function copyQuoteToClipboard() {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
       showToast('Quote copied to clipboard!');
-    }).catch(() => {
-      fallbackCopy(text);
-    });
+    }).catch(() => fallbackCopy(text));
   } else {
     fallbackCopy(text);
   }
@@ -132,7 +121,6 @@ function fallbackCopy(text) {
   document.body.removeChild(textarea);
 }
 
-// Notification Settings Modal
 function openSettingsModal() {
   const isEnabled = NotificationManager.isEnabled();
   const { hour, minute } = NotificationManager.getTime();
@@ -168,29 +156,36 @@ function updateNotificationUIState() {
 
 async function handleNotificationToggle(e) {
   const willEnable = e.target.checked;
-  if (willEnable) {
-    const permission = await NotificationManager.requestPermission();
-    if (permission === 'granted') {
-      NotificationManager.setEnabled(true);
-      timeSection.classList.add('visible');
-      updateNotificationUIState();
-      showToast('Daily notifications enabled!');
-    } else if (permission === 'denied') {
-      notifToggle.checked = false;
-      NotificationManager.setEnabled(false);
-      timeSection.classList.remove('visible');
-      showToast('Permission denied. Please allow notifications in browser settings.');
-    } else {
-      notifToggle.checked = false;
-      NotificationManager.setEnabled(false);
-      timeSection.classList.remove('visible');
-      showToast('Notifications are not supported in this browser.');
-    }
-  } else {
+  if (!willEnable) {
     NotificationManager.setEnabled(false);
     timeSection.classList.remove('visible');
     updateNotificationUIState();
     showToast('Daily notifications disabled');
+    return;
+  }
+
+  const permission = await NotificationManager.requestPermission();
+
+  if (permission === 'granted') {
+    NotificationManager.setEnabled(true);
+    timeSection.classList.add('visible');
+    updateNotificationUIState();
+    showToast('Daily notifications enabled!');
+  } else if (permission === 'denied') {
+    notifToggle.checked = false;
+    NotificationManager.setEnabled(false);
+    timeSection.classList.remove('visible');
+    showToast('Permission denied. Please allow notifications in browser settings.');
+  } else if (permission === 'ios-install-required') {
+    notifToggle.checked = false;
+    NotificationManager.setEnabled(false);
+    timeSection.classList.remove('visible');
+    showToast('On iPhone, first use Safari → Share → Add to Home Screen.');
+  } else {
+    notifToggle.checked = false;
+    NotificationManager.setEnabled(false);
+    timeSection.classList.remove('visible');
+    showToast('Notifications are not supported in this browser.');
   }
 }
 
@@ -205,24 +200,16 @@ function handleTimeChange() {
 
   hourInput.value = h.toString().padStart(2, '0');
   minuteInput.value = m.toString().padStart(2, '0');
-
   NotificationManager.setTime(h, m);
   timeDisplay.textContent = `Daily notification scheduled at ${formatDisplayTime(h, m)}`;
 }
 
-// Event Listeners
-newQuoteBtn.addEventListener('click', () => {
-  displayQuote(getRandomQuote(currentFilter));
-});
-
+newQuoteBtn.addEventListener('click', () => displayQuote(getRandomQuote(currentFilter)));
 shareBtn.addEventListener('click', shareQuote);
 copyBtn.addEventListener('click', copyQuoteToClipboard);
 
 filterChips.forEach(chip => {
-  chip.addEventListener('click', () => {
-    const key = chip.dataset.filter || null;
-    setFilter(key);
-  });
+  chip.addEventListener('click', () => setFilter(chip.dataset.filter || null));
 });
 
 bellBtn.addEventListener('click', openSettingsModal);
@@ -231,14 +218,11 @@ doneModalBtn.addEventListener('click', closeSettingsModal);
 settingsModal.addEventListener('click', (e) => {
   if (e.target === settingsModal) closeSettingsModal();
 });
-
 enableNotifHintBtn.addEventListener('click', openSettingsModal);
-
 notifToggle.addEventListener('change', handleNotificationToggle);
 hourInput.addEventListener('change', handleTimeChange);
 minuteInput.addEventListener('change', handleTimeChange);
 
-// PWA Installation Hook
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
@@ -249,27 +233,19 @@ installBtn.addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') {
-    showToast('Thank you for installing Divine Quotes!');
-  }
+  if (outcome === 'accepted') showToast('Thank you for installing Divine Quotes!');
   deferredPrompt = null;
   installBanner.classList.remove('show');
 });
 
-// Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
-      .then(reg => {
-        console.log('Service Worker registered successfully:', reg.scope);
-      })
-      .catch(err => {
-        console.log('Service Worker registration failed:', err);
-      });
+      .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+      .catch(err => console.log('Service Worker registration failed:', err));
   });
 }
 
-// Initialization
 document.addEventListener('DOMContentLoaded', () => {
   updateNotificationUIState();
   NotificationManager.startDailyChecker();

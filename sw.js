@@ -1,5 +1,5 @@
 // Service Worker for Divine Quotes PWA
-const CACHE_NAME = 'divine-quotes-v1';
+const CACHE_NAME = 'divine-quotes-v2';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -40,13 +40,11 @@ self.addEventListener('activate', (event) => {
 
 // Fetch: Cache-First strategy for ultra-fast and offline experience
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch in background to keep cache fresh (stale-while-revalidate for local assets)
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
@@ -61,19 +59,49 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Background Web Push entry point.
+// A server-side Web Push provider can send a payload to this handler.
+self.addEventListener('push', (event) => {
+  let payload = {};
+
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (err) {
+    payload = { body: event.data ? event.data.text() : '' };
+  }
+
+  const title = payload.title || 'Divine Quotes';
+  const options = {
+    body: payload.body || 'A moment of sacred wisdom is waiting for you.',
+    icon: payload.icon || 'icons/icon-192.png',
+    badge: payload.badge || 'icons/icon-192.png',
+    tag: payload.tag || 'daily-divine-quote',
+    renotify: Boolean(payload.renotify),
+    data: {
+      url: payload.url || './',
+      quoteId: payload.quoteId || null
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
 // Notification Click: Focus existing client or open new window
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      const targetUrl = event.notification.data?.url || './';
+
       for (const client of clientList) {
         if (client.url && 'focus' in client) {
           return client.focus();
         }
       }
+
       if (clients.openWindow) {
-        return clients.openWindow('./');
+        return clients.openWindow(targetUrl);
       }
     })
   );
